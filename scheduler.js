@@ -123,6 +123,7 @@ document.getElementById('schedulerForm').addEventListener('submit', function(e) 
     if (scheduleTable) {
         scheduleTable.remove();
     }
+    document.getElementById('errorContainer').innerHTML = ''
 
     const days = parseInt(document.getElementById('days').value);
     const rooms = parseInt(document.getElementById('rooms').value) || null;
@@ -153,7 +154,7 @@ document.getElementById('schedulerForm').addEventListener('submit', function(e) 
         
         // Hide instructions and show the "View Instructions" button
         document.getElementById('ins').style.display = 'none';
-        document.getElementById('viewInstructions').style.display = 'block';
+        document.getElementById('ins-btn').style.display = 'block';
         document.getElementById('footer').style.display = 'block';
     }).catch(error => {
         displayError(`Error processing files: ${error.message}`);
@@ -178,19 +179,22 @@ function processCourses(data) {
     // Filter out empty rows and rows with all empty values
     return data.filter(row => Object.keys(row).length > 0 && Object.values(row).some(value => value.trim() !== '')).map((row, index) => {
         // Check if required fields exist and have values
-        if (!row.course || !row.teacher || !row.section || !row.lectures) {
+        if (!row.course || !row.teacher || !row.section) {
             console.warn("Missing required fields in row:", row);
             throw new Error('Missing required fields in course data. Required fields: course, teacher, section, lectures');
         }
+
+        // Determine the priority based on whether slot is given
+        const priority = row.slots && row.slots.trim() !== '' ? 1 : 2;
 
         return new Course(
             index,
             row.course.trim(),
             row.teacher.trim(),
             row.section.split(',').map(s => s.trim()),
-            parseInt(row.lectures) || 0,
-            parseInt(row.priority) || 999,
-            parseTimeslots(row.preferred_slots || '')
+            parseInt(row.lectures) || 1,
+            priority,
+            parseTimeslots(row.slots || '')
         );
     });
 }
@@ -200,8 +204,8 @@ function processUnavailability(data) {
     if (!data) return null;
     let unavail = {};
     for (let row of data) {
-        if (row.teacher && row.unavailable_slots) {
-            unavail[row.teacher.trim()] = parseTimeslots(row.unavailable_slots);
+        if (row.teacher && row.slots) {
+            unavail[row.teacher.trim()] = parseTimeslots(row.slots);
         }
     }
     return unavail;
@@ -264,7 +268,6 @@ function displayError(message) {
 
 function toggleInstructions() {
     const instructions = document.getElementById('ins');
-    const button = document.getElementById('viewInstructions');
     if (instructions.style.display === 'none') {
         instructions.style.display = 'block';
     } else {
