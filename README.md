@@ -1,2 +1,3 @@
-# lecture-scheduler
-Lecture Scheduler is a timetable generator for university departments, that allots course lectures/classes to periods across the weekdays in a conflict-free manner, satisfying user-specified preferences and constraints.
+# Lecture Scheduler
+Lecture Scheduler is a timetable generator for university departments, that allots course lectures/classes to periods across the weekdays in a conflict-free manner i.e. no two classes scheduled at the same time will belong to same section or same teacher. It takes in a list of classes to be scheduled in CSV file format that includes course name, teacher name, and section. It then allots the lectures/classes to various timeslots (day, period) such that minimum number of periods are used in total. The scheduler can optionally also take input for course-class's preferred timeslots and priority of allocation. Moreover, it can also take in teacher-specific timeslot constraints as another CSV file, and ensure these constraints are met.  
+I had initially written it as a Flask app that I later converted into JS app with help of Claude.
